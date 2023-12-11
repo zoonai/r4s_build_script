@@ -32,9 +32,9 @@ export gitea=git.cooluc.com
 
 # github mirror
 if [ "$isCN" = "CN" ]; then
-    export github_mirror="https://github.com"
+    export github_mirror="https://github.com/zoonai/r4s_build_script"
 else
-    export github_mirror="https://github.com"
+    export github_mirror="https://github.com/zoonai/r4s_build_script"
 fi
 
 # Check root
@@ -55,14 +55,14 @@ fi
 
 # Source branch
 if [ "$1" = "dev" ]; then
-    export branch=openwrt-23.05
+    export branch=immortalwrt-23.05
     export version=snapshots-23.05
-    export toolchain_version=openwrt-23.05
-elif [ "$1" = "rc2" ]; then
+    export toolchain_version=immortalwrt-23.05
+elif [ "$1" = "rc1" ]; then
     latest_release="v$(curl -s https://$mirror/tags/v23)"
     export branch=$latest_release
-    export version=rc2
-    export toolchain_version=openwrt-23.05
+    export version=rc1
+    export toolchain_version=immortalwrt-23.05
 elif [ -z "$1" ]; then
     echo -e "\n${RED_COLOR}Building type not specified.${RES}\n"
     echo -e "Usage:\n"
@@ -113,17 +113,17 @@ fi
 echo -e "${GREEN_COLOR}Date: $CURRENT_DATE${RES}\r\n"
 
 # get source
-rm -rf openwrt master && mkdir master
+rm -rf immortalwrt master && mkdir master
 # openwrt - releases
-git clone --depth=1 $github_mirror/openwrt/openwrt -b $branch
+git clone --depth=1 $github_mirror/immortalwrt/immortalwrt -b $branch
 
 # openwrt master
-git clone $github_mirror/openwrt/openwrt master/openwrt --depth=1
-git clone $github_mirror/openwrt/packages master/packages --depth=1
-git clone $github_mirror/openwrt/luci master/luci --depth=1
-git clone $github_mirror/openwrt/routing master/routing --depth=1
+git clone $github_mirror/immortalwrt/immortalwrt master/openwrt --depth=1
+git clone $github_mirror/immortalwrt/packages master/packages --depth=1
+git clone $github_mirror/immortalwrt/luci master/luci --depth=1
+git clone $github_mirror/immortalwrt/routing master/routing --depth=1
 # openwrt-23.05
-[ "$1" = "rc2" ] && git clone $github_mirror/openwrt/openwrt -b openwrt-23.05 master/openwrt-23.05 --depth=1
+[ "$1" = "rc2" ] && git clone $github_mirror/openwrt/openwrt -b immortalwrt-23.05 master/openwrt-23.05 --depth=1
 # immortalwrt master
 git clone $github_mirror/immortalwrt/packages master/immortalwrt_packages --depth=1
 # mj22226 openwrt
@@ -131,7 +131,7 @@ git clone $github_mirror/mj22226/openwrt -b linux-6.1 master/mj22226_openwrt --d
 
 if [ -d openwrt ]; then
     cd openwrt
-    curl -Os https://$mirror/openwrt/patch/key.tar.gz && tar zxf key.tar.gz && rm -f key.tar.gz
+    curl -Os https://$mirror/immortalwrt/patch/key.tar.gz && tar zxf key.tar.gz && rm -f key.tar.gz
 else
     echo -e "${RED_COLOR}Failed to download source code${RES}"
     exit 1
@@ -157,10 +157,10 @@ else
     telephony=";$branch"
 fi
 cat > feeds.conf <<EOF
-src-git packages $github_mirror/openwrt/packages.git$packages
-src-git luci $github_mirror/openwrt/luci.git$luci
-src-git routing $github_mirror/openwrt/routing.git$routing
-src-git telephony $github_mirror/openwrt/telephony.git$telephony
+src-git packages $github_mirror/immortalwrt/packages.git$packages
+src-git luci $github_mirror/immortalwrt/luci.git$luci
+src-git routing $github_mirror/immortalwrt/routing.git$routing
+src-git telephony $github_mirror/immortalwrt/telephony.git$telephony
 EOF
 
 # Init feeds
@@ -177,13 +177,13 @@ fi
 echo -e "\n${GREEN_COLOR}Patching ...${RES}\n"
 
 # scripts
-curl -sO https://$mirror/openwrt/scripts/00-prepare_base.sh
-curl -sO https://$mirror/openwrt/scripts/01-prepare_base-mainline.sh
-curl -sO https://$mirror/openwrt/scripts/02-prepare_package.sh
-curl -sO https://$mirror/openwrt/scripts/03-convert_translation.sh
-curl -sO https://$mirror/openwrt/scripts/04-fix_kmod.sh
-curl -sO https://$mirror/openwrt/scripts/05-fix-source.sh
-curl -sO https://$mirror/openwrt/scripts/99_clean_build_cache.sh
+curl -sO https://$mirror/immortalwrt/scripts/00-prepare_base.sh
+curl -sO https://$mirror/immortalwrt/scripts/01-prepare_base-mainline.sh
+curl -sO https://$mirror/immortalwrt/scripts/02-prepare_package.sh
+curl -sO https://$mirror/immortalwrt/scripts/03-convert_translation.sh
+curl -sO https://$mirror/immortalwrt/scripts/04-fix_kmod.sh
+curl -sO https://$mirror/immortalwrt/scripts/05-fix-source.sh
+curl -sO https://$mirror/immortalwrt/scripts/99_clean_build_cache.sh
 chmod 0755 *sh
 bash 00-prepare_base.sh
 bash 02-prepare_package.sh
@@ -198,21 +198,21 @@ rm -rf ../master
 
 # Load devices Config
 if [ "$platform" = "x86_64" ]; then
-    curl -s https://$mirror/openwrt/23-config-musl-x86 > .config
+    curl -s https://$mirror/immortalwrt/23-config-musl-x86 > .config
     ALL_KMODS=y
 elif [ "$platform" = "rk3568" ]; then
-    curl -s https://$mirror/openwrt/23-config-musl-r5s > .config
+    curl -s https://$mirror/immortalwrt/23-config-musl-r5s > .config
     ALL_KMODS=y
 else
-    curl -s https://$mirror/openwrt/23-config-musl-r4s > .config
+    curl -s https://$mirror/immortalwrt/23-config-musl-r4s > .config
 fi
 
 # config-common
 if [ "$MINIMAL_BUILD" = "y" ]; then
-    curl -s https://$mirror/openwrt/23-config-minimal-common >> .config
+    curl -s https://$mirror/immortalwrt/23-config-minimal-common >> .config
     echo 'VERSION_TYPE="minimal"' >> package/base-files/files/usr/lib/os-release
 else
-    curl -s https://$mirror/openwrt/23-config-common >> .config
+    curl -s https://$mirror/immortalwrt/23-config-common >> .config
 fi
 
 # ota
@@ -220,17 +220,17 @@ fi
 
 # bpf
 export ENABLE_BPF=$ENABLE_BPF
-[ "$ENABLE_BPF" = "y" ] && curl -s https://$mirror/openwrt/generic/config-bpf >> .config
+[ "$ENABLE_BPF" = "y" ] && curl -s https://$mirror/immortalwrt/generic/config-bpf >> .config
 
 # glibc
 [ "$USE_GLIBC" = "y" ] && {
-    curl -s https://$mirror/openwrt/generic/config-glibc >> .config
+    curl -s https://$mirror/immortalwrt/generic/config-glibc >> .config
     sed -i '/NaiveProxy/d' .config
 }
 
 # openwrt-23.05 gcc11
 if [ ! "$USE_GLIBC" = "y" ]; then
-    curl -s https://$mirror/openwrt/generic/config-gcc11 >> .config
+    curl -s https://$mirror/immortalwrt/generic/config-gcc11 >> .config
 fi
 
 # clean directory - github actions
@@ -346,11 +346,11 @@ else
             VERSION=$(sed 's/v//g' version.txt)
             if [ "$model" = "nanopi-r4s" ]; then
                 SHA256=$(sha256sum bin/targets/rockchip/armv8*/*-squashfs-sysupgrade.img.gz | awk '{print $1}')
-                jq ".\"friendlyarm,nanopi-r4s\"[0].build_date=\"$CURRENT_DATE\"|.\"friendlyarm,nanopi-r4s\"[0].sha256sum=\"$SHA256\"|.\"friendlyarm,nanopi-r4s\"[0].url=\"https://r4s.cooluc.com/$BUILD_TYPE/openwrt-23.05/v$VERSION/openwrt-$VERSION-rockchip-armv8-friendlyarm_nanopi-r4s-squashfs-sysupgrade.img.gz\"" ota.json > ota/fw.json
+                jq ".\"friendlyarm,nanopi-r4s\"[0].build_date=\"$CURRENT_DATE\"|.\"friendlyarm,nanopi-r4s\"[0].sha256sum=\"$SHA256\"|.\"friendlyarm,nanopi-r4s\"[0].url=\"https://r4s.cooluc.com/$BUILD_TYPE/immortalwrt-23.05/v$VERSION/openwrt-$VERSION-rockchip-armv8-friendlyarm_nanopi-r4s-squashfs-sysupgrade.img.gz\"" ota.json > ota/fw.json
             elif [ "$model" = "nanopi-r5s" ]; then
                 SHA256_R5C=$(sha256sum bin/targets/rockchip/armv8*/*-r5c-squashfs-sysupgrade.img.gz | awk '{print $1}')
                 SHA256_R5S=$(sha256sum bin/targets/rockchip/armv8*/*-r5s-squashfs-sysupgrade.img.gz | awk '{print $1}')
-                jq ".\"friendlyarm,nanopi-r5s\"[0].build_date=\"$CURRENT_DATE\"|.\"friendlyarm,nanopi-r5s\"[0].sha256sum=\"$SHA256_R5S\"|.\"friendlyarm,nanopi-r5s\"[0].url=\"https://r5s.cooluc.com/$BUILD_TYPE/openwrt-23.05/v$VERSION/openwrt-$VERSION-rockchip-armv8-friendlyarm_nanopi-r5s-squashfs-sysupgrade.img.gz\"|.\"friendlyarm,nanopi-r5c\"[0].build_date=\"$CURRENT_DATE\"|.\"friendlyarm,nanopi-r5c\"[0].sha256sum=\"$SHA256_R5C\"|.\"friendlyarm,nanopi-r5c\"[0].url=\"https://r5s.cooluc.com/$BUILD_TYPE/openwrt-23.05/v$VERSION/openwrt-$VERSION-rockchip-armv8-friendlyarm_nanopi-r5c-squashfs-sysupgrade.img.gz\"" ota.json > ota/fw.json
+                jq ".\"friendlyarm,nanopi-r5s\"[0].build_date=\"$CURRENT_DATE\"|.\"friendlyarm,nanopi-r5s\"[0].sha256sum=\"$SHA256_R5S\"|.\"friendlyarm,nanopi-r5s\"[0].url=\"https://r5s.cooluc.com/$BUILD_TYPE/openwrt-23.05/v$VERSION/immortalwrt-$VERSION-rockchip-armv8-friendlyarm_nanopi-r5s-squashfs-sysupgrade.img.gz\"|.\"friendlyarm,nanopi-r5c\"[0].build_date=\"$CURRENT_DATE\"|.\"friendlyarm,nanopi-r5c\"[0].sha256sum=\"$SHA256_R5C\"|.\"friendlyarm,nanopi-r5c\"[0].url=\"https://r5s.cooluc.com/$BUILD_TYPE/openwrt-23.05/v$VERSION/openwrt-$VERSION-rockchip-armv8-friendlyarm_nanopi-r5c-squashfs-sysupgrade.img.gz\"" ota.json > ota/fw.json
             fi
         fi
         # Backup download cache
