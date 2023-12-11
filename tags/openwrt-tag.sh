@@ -1,6 +1,6 @@
 #!/bin/bash
 
-curl -s "https://api.github.com/repos/openwrt/openwrt/tags" -o tags.json || exit 1
+curl -s "https://api.github.com/repos/immortalwrt/immortalwrt/tags" -o tags.json || exit 1
 if [ ! -s tags.json ]; then
     echo error
     exit 1
